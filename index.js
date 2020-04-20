@@ -5,7 +5,7 @@ const unzip = require('./src/unzip');
 const klaw = require('klaw-sync');
 const fs = require('fs-extra');
 const {JSDOM} = require('jsdom');
-const pinyin = require('pinyin');
+const pinyin = require('pinyin-en');
 const {serializeToString} = require('xmlserializer');
 const {parse} = require('parse5');
 
@@ -16,7 +16,7 @@ const tempPath = path.join(os.tmpdir(), 'pinyin-epub', uuid());
 fs.ensureDirSync(tempPath);
 
 unzip(inputPath).to(tempPath)
-  .then(() => {
+  .then(async () => {
     const files = klaw(tempPath, {
       filter(item) {
         return /\.x?html/i.test(path.extname(item.path));
@@ -24,20 +24,21 @@ unzip(inputPath).to(tempPath)
       traverseAll: true,
     });
 
-    files.forEach((file) => {
+    for (const file of files) {
       const html = fs.readFileSync(file.path, 'utf-8');
       const dom = new JSDOM(html);
-      const nodes = [dom.window.document.body];
+      const document = dom.window.document;
+      const nodes = [document.body];
       while (nodes.length) {
         const node = nodes.pop();
         node.childNodes.forEach(child => nodes.push(child));
         if (node.nodeType !== 3) continue;
-        const pinYin = pinyin(node.textContent, {segment: true, group: true});
-        node.textContent = pinYin.reduce((s, p) => s + ' ' + p.join(''));
+        const pinYin = await pinyin(node.textContent);
+        node.textContent = pinYin.reduce((s, p) => s + ' ' + p.pinyin, '');
       }
       const xhtml = serializeToString(parse(dom.serialize()));
       fs.writeFileSync(file.path, xhtml);
-    });
+    }
 
     console.log('Directory saved: ', tempPath);
   });

@@ -16,7 +16,7 @@
     "klaw-sync": "^6.0.0",
     "node-stream-zip": "^1.8.2",
     "parse5": "^5.1.1",
-    "pinyin": "file:../pinyin",
+    "pinyin-en": "file:../pinyin-en",
     "uuid": "^3.3.3",
     "xmlserializer": "^0.6.1"
   }
