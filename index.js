@@ -33,8 +33,8 @@ unzip(inputPath).to(tempPath)
         const node = nodes.pop();
         node.childNodes.forEach(child => nodes.push(child));
         if (node.nodeType !== 3) continue;
-        const pinYin = await pinyin(node.textContent);
-        node.textContent = pinYin.reduce((s, p) => s + ' ' + p.pinyin, '');
+        const pinYin = pinyin(node.textContent);
+        node.textContent = pinYin.reduce((s, p) => s + ' ' + p[0].pinyin, '');
       }
       const xhtml = serializeToString(parse(dom.serialize()));
       fs.writeFileSync(file.path, xhtml);
